@@ -55,11 +55,17 @@ export const CreateOrderSchema = z.object({
   paymentId: z.string().optional(),
 });
 
-export function parseBody<T>(schema: z.ZodSchema<T>, body: unknown): { data: T; error: null } | { data: null; error: string } {
+type ParseOk<T> = { success: true; data: T };
+type ParseFail = { success: false; error: string };
+type ParseResult<T> = ParseOk<T> | ParseFail;
+
+export function parseBody<T>(schema: z.ZodSchema<T>, body: unknown): ParseResult<T> {
   const result = schema.safeParse(body);
   if (!result.success) {
-    const messages = result.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ');
-    return { data: null, error: messages };
+    const messages = result.error.issues
+      .map((e) => `${e.path.join('.') || 'body'}: ${e.message}`)
+      .join('; ');
+    return { success: false, error: messages };
   }
-  return { data: result.data, error: null };
+  return { success: true, data: result.data };
 }

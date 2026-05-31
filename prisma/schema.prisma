@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -44,6 +43,10 @@ model Product {
 
   category   Category?   @relation(fields: [categoryId], references: [id])
   orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([active])
+  @@index([createdAt])
 }
 
 model Order {
@@ -59,6 +62,8 @@ model Order {
   items OrderItem[]
 
   @@index([userId])
+  @@index([createdAt])
+  @@index([status])
 }
 
 model OrderItem {
@@ -72,4 +77,5 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id])
 
   @@index([orderId])
+  @@index([productId])
 }

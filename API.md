@@ -251,3 +251,75 @@ Remove a product.
 | 403 | Forbidden — admin role required |
 | 404 | Resource not found |
 | 500 | Internal server error |
+
+---
+
+## Orders
+
+### POST /api/orders
+Create a new order. Requires authentication.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Body**
+```json
+{
+  "items": [
+    { "productId": "cm...", "quantity": 2, "unitPrice": 99.90 }
+  ],
+  "shippingAddress": "Rua das Flores, 123 - São Paulo, SP",
+  "paymentId": "pi_..."
+}
+```
+
+Validations applied:
+- `items` must have at least 1 entry
+- `quantity` must be ≥ 1
+- `unitPrice` must be positive
+- Each product must exist, be active, and have sufficient stock
+- Stock is decremented atomically (database transaction)
+
+**Response 201**
+```json
+{
+  "id": "cm...",
+  "userId": "cm...",
+  "status": "pending",
+  "totalAmount": 199.80,
+  "shippingAddress": "...",
+  "paymentId": "pi_...",
+  "createdAt": "...",
+  "items": [
+    {
+      "id": "cm...",
+      "productId": "cm...",
+      "quantity": 2,
+      "unitPrice": 99.90,
+      "product": { "id": "cm...", "name": "Base Líquida FPS 30", "slug": "base-liquida-fps30" }
+    }
+  ]
+}
+```
+
+---
+
+### GET /api/orders/my
+Return the authenticated user's order history, newest first.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response 200** — array of orders with items and product thumbnails.
+
+---
+
+### GET /api/orders/:id
+Return a single order with full detail.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Access control:** The requesting user must own the order, or have admin role.
+
+**Response 200** — order with items, product info, and user info.
+
+**Response 403** `{ "error": "Access denied" }`  
+**Response 404** `{ "error": "Order not found" }`
