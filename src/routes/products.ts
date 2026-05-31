@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
+import { adminMiddleware } from '../middleware/admin';
+import { CreateProductSchema, UpdateProductSchema, parseBody } from '../utils/validation';
 
 const router = Router();
 
@@ -21,7 +23,7 @@ router.get('/search/:query', async (req: Request, res: Response) => {
       orderBy: { name: 'asc' },
     });
     res.json(products);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -64,7 +66,7 @@ router.get('/', async (req: Request, res: Response) => {
     ]);
 
     res.json({ data, total, skip: skipNum, take: takeNum });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -82,41 +84,21 @@ router.get('/:id', async (req: Request, res: Response) => {
       return;
     }
     res.json(product);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // POST /api/products (admin)
-router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  const { data, error } = parseBody(CreateProductSchema, req.body);
+  if (error) {
+    res.status(400).json({ error });
+    return;
+  }
+
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'admin') {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
-
-    const { name, slug, description, price, stock, categoryId, images } = req.body as {
-      name: string;
-      slug: string;
-      description?: string;
-      price: number;
-      stock?: number;
-      categoryId?: string;
-      images?: string[];
-    };
-
-    if (!name || !slug || price === undefined) {
-      res.status(400).json({ error: 'name, slug and price are required' });
-      return;
-    }
-
-    if (typeof price !== 'number' || price < 0) {
-      res.status(400).json({ error: 'price must be a non-negative number' });
-      return;
-    }
-
-    const existingSlug = await prisma.product.findUnique({ where: { slug } });
+    const existingSlug = await prisma.product.findUnique({ where: { slug: data.slug } });
     if (existingSlug) {
       res.status(400).json({ error: 'Product with this slug already exists' });
       return;
@@ -124,82 +106,55 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const product = await prisma.product.create({
       data: {
-        name,
-        slug,
-        description,
-        price,
-        stock: stock ?? 0,
-        categoryId: categoryId ?? null,
-        images: images ?? [],
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        price: data.price,
+        stock: data.stock ?? 0,
+        categoryId: data.categoryId ?? null,
+        images: data.images ?? [],
       },
       include: { category: { select: { id: true, name: true, slug: true } } },
     });
     res.status(201).json(product);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // PUT /api/products/:id (admin)
-router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'admin') {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
+router.put('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  const id = req.params['id'] as string;
 
-    const id = req.params['id'] as string;
+  const { data, error } = parseBody(UpdateProductSchema, req.body);
+  if (error) {
+    res.status(400).json({ error });
+    return;
+  }
+
+  try {
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
       res.status(404).json({ error: 'Product not found' });
       return;
     }
 
-    const { name, description, price, stock, categoryId, images, active } = req.body as {
-      name?: string;
-      description?: string;
-      price?: number;
-      stock?: number;
-      categoryId?: string | null;
-      images?: string[];
-      active?: boolean;
-    };
-
-    if (price !== undefined && (typeof price !== 'number' || price < 0)) {
-      res.status(400).json({ error: 'price must be a non-negative number' });
-      return;
-    }
-
     const product = await prisma.product.update({
       where: { id },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(description !== undefined && { description }),
-        ...(price !== undefined && { price }),
-        ...(stock !== undefined && { stock }),
-        ...(categoryId !== undefined && { categoryId }),
-        ...(images !== undefined && { images }),
-        ...(active !== undefined && { active }),
-      },
+      data,
       include: { category: { select: { id: true, name: true, slug: true } } },
     });
     res.json(product);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // DELETE /api/products/:id (admin)
-router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'admin') {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
+router.delete('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  const id = req.params['id'] as string;
 
-    const id = req.params['id'] as string;
+  try {
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
       res.status(404).json({ error: 'Product not found' });
@@ -208,7 +163,7 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
 
     await prisma.product.delete({ where: { id } });
     res.json({ success: true });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });

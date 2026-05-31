@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import categoriesRoutes from './routes/categories';
 import productsRoutes from './routes/products';
+import ordersRoutes from './routes/orders';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/orders', ordersRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

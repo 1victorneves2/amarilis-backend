@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
+import { adminMiddleware } from '../middleware/admin';
+import { CreateCategorySchema, UpdateCategorySchema, parseBody } from '../utils/validation';
 
 const router = Router();
 
@@ -11,7 +13,7 @@ router.get('/', async (_req: Request, res: Response) => {
       include: { _count: { select: { products: true } } },
     });
     res.json(categories);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -33,86 +35,64 @@ router.get('/:id', async (req: Request, res: Response) => {
       return;
     }
     res.json(category);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  const { data, error } = parseBody(CreateCategorySchema, req.body);
+  if (error) {
+    res.status(400).json({ error });
+    return;
+  }
+
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'admin') {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
-
-    const { name, slug, description } = req.body as {
-      name: string;
-      slug: string;
-      description?: string;
-    };
-
-    if (!name || !slug) {
-      res.status(400).json({ error: 'name and slug are required' });
-      return;
-    }
-
     const existing = await prisma.category.findFirst({
-      where: { OR: [{ name }, { slug }] },
+      where: { OR: [{ name: data.name }, { slug: data.slug }] },
     });
     if (existing) {
       res.status(400).json({ error: 'Category with this name or slug already exists' });
       return;
     }
 
-    const category = await prisma.category.create({
-      data: { name, slug, description },
-    });
+    const category = await prisma.category.create({ data });
     res.status(201).json(category);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'admin') {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
+router.put('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  const id = req.params['id'] as string;
 
-    const id = req.params['id'] as string;
+  const { data, error } = parseBody(UpdateCategorySchema, req.body);
+  if (error) {
+    res.status(400).json({ error });
+    return;
+  }
+
+  try {
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) {
       res.status(404).json({ error: 'Category not found' });
       return;
     }
 
-    const { name, description } = req.body as { name?: string; description?: string };
-
     const category = await prisma.category.update({
       where: { id },
-      data: {
-        ...(name && { name }),
-        ...(description !== undefined && { description }),
-      },
+      data,
     });
     res.json(category);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'admin') {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
+router.delete('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  const id = req.params['id'] as string;
 
-    const id = req.params['id'] as string;
+  try {
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) {
       res.status(404).json({ error: 'Category not found' });
@@ -121,7 +101,7 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
 
     await prisma.category.delete({ where: { id } });
     res.json({ success: true });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
