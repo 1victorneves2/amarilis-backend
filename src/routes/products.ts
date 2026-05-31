@@ -6,7 +6,7 @@ import { CreateProductSchema, UpdateProductSchema, parseBody } from '../utils/va
 
 const router = Router();
 
-// GET /api/products/search/:query  — must come before /:id to avoid conflict
+// GET /api/products/search/:query  — must come before /:id
 router.get('/search/:query', async (req: Request, res: Response) => {
   try {
     const query = req.params['query'] as string;
@@ -91,14 +91,15 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST /api/products (admin)
 router.post('/', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
-  const { data, error } = parseBody(CreateProductSchema, req.body);
-  if (error) {
-    res.status(400).json({ error });
+  const result = parseBody(CreateProductSchema, req.body);
+  if (!result.success) {
+    res.status(400).json({ error: result.error });
     return;
   }
+  const { name, slug, description, price, stock, categoryId, images } = result.data;
 
   try {
-    const existingSlug = await prisma.product.findUnique({ where: { slug: data.slug } });
+    const existingSlug = await prisma.product.findUnique({ where: { slug } });
     if (existingSlug) {
       res.status(400).json({ error: 'Product with this slug already exists' });
       return;
@@ -106,13 +107,13 @@ router.post('/', authMiddleware, adminMiddleware, async (req: Request, res: Resp
 
     const product = await prisma.product.create({
       data: {
-        name: data.name,
-        slug: data.slug,
-        description: data.description,
-        price: data.price,
-        stock: data.stock ?? 0,
-        categoryId: data.categoryId ?? null,
-        images: data.images ?? [],
+        name,
+        slug,
+        description,
+        price,
+        stock: stock ?? 0,
+        categoryId: categoryId ?? null,
+        images: images ?? [],
       },
       include: { category: { select: { id: true, name: true, slug: true } } },
     });
@@ -126,9 +127,9 @@ router.post('/', authMiddleware, adminMiddleware, async (req: Request, res: Resp
 router.put('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
   const id = req.params['id'] as string;
 
-  const { data, error } = parseBody(UpdateProductSchema, req.body);
-  if (error) {
-    res.status(400).json({ error });
+  const result = parseBody(UpdateProductSchema, req.body);
+  if (!result.success) {
+    res.status(400).json({ error: result.error });
     return;
   }
 
@@ -141,7 +142,7 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Re
 
     const product = await prisma.product.update({
       where: { id },
-      data,
+      data: result.data,
       include: { category: { select: { id: true, name: true, slug: true } } },
     });
     res.json(product);

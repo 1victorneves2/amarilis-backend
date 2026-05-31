@@ -7,18 +7,18 @@ const router = Router();
 
 // POST /api/orders — create a new order
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
-  const { data, error } = parseBody(CreateOrderSchema, req.body);
-  if (error) {
-    res.status(400).json({ error });
+  const result = parseBody(CreateOrderSchema, req.body);
+  if (!result.success) {
+    res.status(400).json({ error: result.error });
     return;
   }
+  const { items, shippingAddress, paymentId } = result.data;
 
   try {
-    // Verify all products exist and have sufficient stock
-    const productIds = data.items.map((i) => i.productId);
+    const productIds = items.map((i) => i.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, active: true },
-      select: { id: true, name: true, stock: true, price: true },
+      select: { id: true, name: true, stock: true },
     });
 
     if (products.length !== productIds.length) {
@@ -27,7 +27,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     const productMap = new Map(products.map((p) => [p.id, p]));
-    for (const item of data.items) {
+    for (const item of items) {
       const product = productMap.get(item.productId)!;
       if (product.stock < item.quantity) {
         res.status(400).json({
@@ -37,22 +37,18 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       }
     }
 
-    const totalAmount = data.items.reduce(
-      (sum, item) => sum + item.unitPrice * item.quantity,
-      0
-    );
+    const totalAmount = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
-    // Create order + items and decrement stock in a transaction
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
           userId: req.userId!,
           status: 'pending',
           totalAmount,
-          shippingAddress: data.shippingAddress,
-          paymentId: data.paymentId,
+          shippingAddress,
+          paymentId,
           items: {
-            create: data.items.map((item) => ({
+            create: items.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
               unitPrice: item.unitPrice,
@@ -66,9 +62,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         },
       });
 
-      // Decrement stock
       await Promise.all(
-        data.items.map((item) =>
+        items.map((item) =>
           tx.product.update({
             where: { id: item.productId },
             data: { stock: { decrement: item.quantity } },
@@ -111,7 +106,9 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       where: { id },
       include: {
         items: {
-          include: { product: { select: { id: true, name: true, slug: true, price: true, images: true } } },
+          include: {
+            product: { select: { id: true, name: true, slug: true, price: true, images: true } },
+          },
         },
         user: { select: { id: true, name: true, email: true } },
       },
@@ -122,7 +119,6 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // Check that requester owns the order (or is admin via separate route if needed)
     const requestingUser = await prisma.user.findUnique({
       where: { id: req.userId },
       select: { role: true },

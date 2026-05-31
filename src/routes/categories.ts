@@ -41,22 +41,23 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 router.post('/', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
-  const { data, error } = parseBody(CreateCategorySchema, req.body);
-  if (error) {
-    res.status(400).json({ error });
+  const result = parseBody(CreateCategorySchema, req.body);
+  if (!result.success) {
+    res.status(400).json({ error: result.error });
     return;
   }
+  const { name, slug, description } = result.data;
 
   try {
     const existing = await prisma.category.findFirst({
-      where: { OR: [{ name: data.name }, { slug: data.slug }] },
+      where: { OR: [{ name }, { slug }] },
     });
     if (existing) {
       res.status(400).json({ error: 'Category with this name or slug already exists' });
       return;
     }
 
-    const category = await prisma.category.create({ data });
+    const category = await prisma.category.create({ data: { name, slug, description } });
     res.status(201).json(category);
   } catch {
     res.status(500).json({ error: 'Internal server error' });
@@ -66,9 +67,9 @@ router.post('/', authMiddleware, adminMiddleware, async (req: Request, res: Resp
 router.put('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
   const id = req.params['id'] as string;
 
-  const { data, error } = parseBody(UpdateCategorySchema, req.body);
-  if (error) {
-    res.status(400).json({ error });
+  const result = parseBody(UpdateCategorySchema, req.body);
+  if (!result.success) {
+    res.status(400).json({ error: result.error });
     return;
   }
 
@@ -81,7 +82,7 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Re
 
     const category = await prisma.category.update({
       where: { id },
-      data,
+      data: result.data,
     });
     res.json(category);
   } catch {
