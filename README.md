@@ -38,5 +38,5 @@ amarilis-backend/
 
 ## Repositorios
 
-- Frontend: https://github.com/dev.ictor/amarilis-beaute
-- Backend: https://github.com/dev.ictor/amarilis-backend
+- Frontend: https://github.com/1victorneves2/amarilis-beaute
+- Backend: https://github.com/1victorneves2/amarilis-backend
