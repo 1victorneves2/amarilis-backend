@@ -7,7 +7,6 @@ import categoriesRoutes from './routes/categories';
 import productsRoutes from './routes/products';
 import ordersRoutes from './routes/orders';
 import whatsappOrderRoutes from './routes/whatsapp';
-import seedRoutes from './routes/seed';
 
 dotenv.config();
 
@@ -51,7 +50,6 @@ app.use('/api/products', productsRoutes);
 // whatsapp must be mounted before /api/orders to avoid prefix collision
 app.use('/api/orders/whatsapp', whatsappOrderRoutes);
 app.use('/api/orders', ordersRoutes);
-app.use('/api/seed', seedRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
