@@ -6,6 +6,7 @@ import authRoutes from './routes/auth';
 import categoriesRoutes from './routes/categories';
 import productsRoutes from './routes/products';
 import ordersRoutes from './routes/orders';
+import whatsappOrderRoutes from './routes/whatsapp';
 
 dotenv.config();
 
@@ -46,6 +47,8 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/products', productsRoutes);
+// whatsapp must be mounted before /api/orders to avoid prefix collision
+app.use('/api/orders/whatsapp', whatsappOrderRoutes);
 app.use('/api/orders', ordersRoutes);
 
 app.listen(PORT, () => {

@@ -1,65 +1,42 @@
-# Amarilis Beauté — Backend API
+﻿# Amarilis Beaute - Backend
 
-Node.js/Express + PostgreSQL + Prisma + TypeScript
+API REST para e-commerce de beleza, desenvolvida com Express, TypeScript, PostgreSQL e Prisma.
 
-## Setup
+## Stack
+
+- Express.js
+- TypeScript
+- PostgreSQL
+- Prisma ORM
+- JWT Authentication
+- Zod
+
+## Instalacao
 
 ```bash
 npm install
-npx prisma generate
-# Configure .env (copy from .env.example)
 npm run dev
 ```
 
-Server starts at http://localhost:3001
+## URLs
 
-## Database
+- Development: http://localhost:3001
+- Production: https://amarilis-backend.onrender.com
+- API Docs: http://localhost:3001/api
 
-PostgreSQL + Prisma ORM. Connection string configured via `DATABASE_URL` in `.env`.
-
-To apply schema:
-```bash
-npx prisma migrate dev
-```
-
-## Seed
-
-```bash
-npm run seed               # categories + products
-npm run seed:categories    # categories only
-npm run seed:products      # products only (requires categories)
-```
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Development server with hot reload |
-| `npm run build` | Compile TypeScript |
-| `npm start` | Run compiled build |
-| `npm run seed` | Seed database with sample data |
-
-## API
-
-See [API.md](./API.md) for full endpoint documentation.
-
-### Quick reference
+## Estrutura
 
 ```
-GET  /health
-POST /api/auth/register
-POST /api/auth/login
-
-GET    /api/categories
-GET    /api/categories/:id
-POST   /api/categories        (admin)
-PUT    /api/categories/:id    (admin)
-DELETE /api/categories/:id    (admin)
-
-GET    /api/products
-GET    /api/products/search/:query
-GET    /api/products/:id
-POST   /api/products          (admin)
-PUT    /api/products/:id      (admin)
-DELETE /api/products/:id      (admin)
+amarilis-backend/
+  src/
+    routes/   - API routes
+    scripts/  - Seed scripts
+    main.ts   - Server entry
+  prisma/     - Database schema
+  .env        - Environment variables
 ```
+
+## Repositorios
+
+- Frontend: https://github.com/dev.ictor/amarilis-beaute
+- Backend: https://github.com/dev.ictor/amarilis-backend
