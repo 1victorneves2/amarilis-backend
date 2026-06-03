@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn src/main.ts",
-    "build": "tsc",
-    "start": "node dist/main.js",
+    "build": "prisma generate && tsc",
+    "start": "prisma migrate deploy && node dist/main.js",
     "seed:categories": "ts-node src/scripts/seed-categories.ts",
     "seed:products": "ts-node src/scripts/seed-products.ts",
     "seed": "npm run seed:categories && npm run seed:products"
