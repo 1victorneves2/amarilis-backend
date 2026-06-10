@@ -43,6 +43,26 @@ export const UpdateProductSchema = z.object({
   active: z.boolean().optional(),
 });
 
+export const CreateGuestOrderSchema = z.object({
+  customerName: z.string().min(2, 'customerName obrigatório'),
+  customerEmail: z.string().trim().optional().transform((v) => v || undefined),
+  customerPhone: z.string().min(8, 'customerPhone obrigatório'),
+  shippingAddress: z.string().min(3, 'shippingAddress obrigatório'),
+  city: z.string().min(2, 'city obrigatório'),
+  state: z.string().min(2, 'state obrigatório'),
+  zipCode: z.string().optional(),
+  notes: z.string().optional(),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1, 'productId obrigatório'),
+        quantity: z.number().int().min(1, 'quantity mínimo 1'),
+        unitPrice: z.number().positive('unitPrice deve ser positivo'),
+      })
+    )
+    .min(1, 'Pelo menos um item é obrigatório'),
+});
+
 export const CreateOrderSchema = z.object({
   items: z.array(
     z.object({

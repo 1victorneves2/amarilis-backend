@@ -56,6 +56,13 @@ model Order {
   status          String   @default("pending")
   totalAmount     Float
   shippingAddress String?
+  city            String?
+  state           String?
+  zipCode         String?
+  customerName    String?
+  customerEmail   String?
+  customerPhone   String?
+  notes           String?
   paymentId       String?
   createdAt       DateTime @default(now())
 
