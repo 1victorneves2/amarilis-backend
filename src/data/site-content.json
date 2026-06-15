@@ -1,0 +1,64 @@
+{
+  "sobre": {
+    "hero": {
+      "titulo": "Sobre a Amarilis Beauté",
+      "subtitulo": "Beleza premium em Manaus, Amazonas",
+      "descricao": "Somos uma loja de cosméticos dedicada a oferecer produtos selecionados das melhores marcas do mundo para elevar sua rotina de beleza a um novo patamar."
+    },
+    "historia": {
+      "titulo": "Nossa História",
+      "texto": "A Amarilis Beauté nasceu do desejo de trazer para Manaus o que há de mais sofisticado no universo da beleza. Com curadoria criteriosa e paixão pelo que fazemos, reunimos produtos de marcas nacionais e internacionais que se destacam pela qualidade, inovação e resultados comprovados. Acreditamos que cuidar da beleza é cuidar de si mesma — e estamos aqui para tornar essa experiência especial a cada compra."
+    },
+    "missao": {
+      "titulo": "Nossa Missão",
+      "texto": "Democratizar o acesso à beleza premium em Manaus, trazendo produtos de qualidade com atendimento personalizado."
+    },
+    "valores": [
+      {
+        "titulo": "Qualidade",
+        "descricao": "Produtos selecionados das melhores marcas nacionais e importadas."
+      },
+      {
+        "titulo": "Confiança",
+        "descricao": "Atendimento transparente e honesto em cada etapa da compra."
+      },
+      {
+        "titulo": "Beleza",
+        "descricao": "Realçar a beleza única de cada cliente com produtos pensados para isso."
+      }
+    ],
+    "localizacao": {
+      "endereco": "Rua Prof. Raymunda Magalhães, 133",
+      "bairro": "Coroado",
+      "cidade": "Manaus - AM"
+    }
+  },
+  "contato": {
+    "hero": {
+      "titulo": "Entre em Contato",
+      "subtitulo": "Estamos aqui para te ajudar"
+    },
+    "canais": [
+      {
+        "tipo": "WhatsApp",
+        "valor": "Entre em contato via WhatsApp",
+        "descricao": "Atendimento rápido e personalizado"
+      },
+      {
+        "tipo": "Instagram",
+        "valor": "@amarilisbeaute",
+        "descricao": "Acompanhe nossas novidades"
+      },
+      {
+        "tipo": "Endereço",
+        "valor": "Rua Prof. Raymunda Magalhães, 133, Coroado, Manaus-AM",
+        "descricao": "Venha nos visitar"
+      }
+    ],
+    "horario": {
+      "titulo": "Horário de Atendimento",
+      "dias": "Segunda a Sábado",
+      "horas": "09h às 18h"
+    }
+  }
+}
