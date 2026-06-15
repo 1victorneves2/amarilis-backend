@@ -171,8 +171,8 @@ router.get('/:id', authMiddleware, adminMiddleware, async (req: AuthRequest, res
   }
 });
 
-// PATCH /api/orders/:id/status — atualizar status (admin only)
-router.patch('/:id/status', authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
+// PATCH|PUT /api/orders/:id/status — atualizar status (admin only)
+async function updateOrderStatus(req: AuthRequest, res: Response): Promise<void> {
   const validStatuses = ['confirmed', 'shipped', 'delivered', 'cancelled'];
   const { status } = req.body as { status?: string };
 
@@ -206,7 +206,10 @@ router.patch('/:id/status', authMiddleware, adminMiddleware, async (req: AuthReq
     console.error('[Orders] Erro ao atualizar status:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+}
+
+router.patch('/:id/status', authMiddleware, adminMiddleware, updateOrderStatus);
+router.put('/:id/status', authMiddleware, adminMiddleware, updateOrderStatus);
 
 // Mantido para compatibilidade com rotas autenticadas existentes
 router.post('/authenticated', authMiddleware, async (req: AuthRequest, res: Response) => {
