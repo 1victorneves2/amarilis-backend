@@ -19,7 +19,17 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:3000').split(',');
+const PRODUCTION_ORIGINS = [
+  'https://amarilis-beaute.vercel.app',
+  'https://amarilis-admin.vercel.app',
+];
+
+const envOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const allowedOrigins = [...new Set([...PRODUCTION_ORIGINS, ...envOrigins])];
 
 app.use(
   cors({
