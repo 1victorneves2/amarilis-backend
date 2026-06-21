@@ -57,7 +57,21 @@ router.get('/', async (req: Request, res: Response) => {
     const [data, total] = await Promise.all([
       prisma.product.findMany({
         where,
-        include: { category: { select: { id: true, name: true, slug: true } } },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          price: true,
+          image: true,
+          images: true,
+          stock: true,
+          active: true,
+          categoryId: true,
+          createdAt: true,
+          updatedAt: true,
+          category: { select: { id: true, name: true, slug: true } },
+        },
         orderBy,
         skip: skipNum,
         take: takeNum,
@@ -77,7 +91,21 @@ router.get('/:id', async (req: Request, res: Response) => {
     const id = req.params['id'] as string;
     const product = await prisma.product.findUnique({
       where: { id },
-      include: { category: { select: { id: true, name: true, slug: true } } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        price: true,
+        image: true,
+        images: true,
+        stock: true,
+        active: true,
+        categoryId: true,
+        createdAt: true,
+        updatedAt: true,
+        category: { select: { id: true, name: true, slug: true } },
+      },
     });
     if (!product) {
       res.status(404).json({ error: 'Product not found' });

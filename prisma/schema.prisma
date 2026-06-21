@@ -6,6 +6,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SEPARATED
+  COMPLETED
+  CANCELED
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -36,14 +44,17 @@ model Product {
   description     String?
   fullDescription String?
   price           Float
-  stock       Int      @default(0)
-  active      Boolean  @default(true)
-  images      String[] @default([])
-  categoryId  String?
-  createdAt   DateTime @default(now())
+  image           String?
+  images          String[] @default([])
+  stock           Int      @default(0)
+  active          Boolean  @default(true)
+  categoryId      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  category   Category?   @relation(fields: [categoryId], references: [id])
-  orderItems OrderItem[]
+  category       Category?       @relation(fields: [categoryId], references: [id])
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
 
   @@index([categoryId])
   @@index([active])
@@ -51,22 +62,26 @@ model Product {
 }
 
 model Order {
-  id              String   @id @default(cuid())
-  userId          String
-  status          String   @default("pending")
-  totalAmount     Float
+  id              String      @id @default(cuid())
+  userId          String?
+  clientName      String      @default("")
+  whatsapp        String      @default("")
+  total           Float       @default(0)
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float       @default(0)
+  customerName    String?
+  customerEmail   String?
+  customerPhone   String?
   shippingAddress String?
   city            String?
   state           String?
   zipCode         String?
-  customerName    String?
-  customerEmail   String?
-  customerPhone   String?
   notes           String?
   paymentId       String?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  user  User        @relation(fields: [userId], references: [id])
+  user  User?       @relation(fields: [userId], references: [id])
   items OrderItem[]
 
   @@index([userId])
@@ -75,15 +90,30 @@ model Order {
 }
 
 model OrderItem {
-  id        String @id @default(cuid())
+  id        String   @id @default(cuid())
   orderId   String
   productId String
   quantity  Int
-  unitPrice Float
+  unitPrice Float    @default(0)
+  price     Float    @default(0)
+  createdAt DateTime @default(now())
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
 
   @@index([orderId])
   @@index([productId])
+}
+
+model StockMovement {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  reason    String
+  orderId   String?
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([orderId])
 }
