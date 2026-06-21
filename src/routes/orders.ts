@@ -190,10 +190,10 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// GET /api/orders — listar pedidos (admin only)
+// GET /api/orders — listar pedidos (público temporariamente, até login admin)
 // Query: ?status=PENDING&client=ana
 // ──────────────────────────────────────────────────────────────
-router.get('/', authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const { status, client } = req.query as { status?: string; client?: string };
 
@@ -247,9 +247,9 @@ router.get('/my', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// GET /api/orders/:id — detalhe (admin only)
+// GET /api/orders/:id — detalhe (público temporariamente, até login admin)
 // ──────────────────────────────────────────────────────────────
-router.get('/:id', authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params as { id: string };
     const order = await prisma.order.findUnique({
