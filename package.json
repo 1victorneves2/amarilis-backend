@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn src/main.ts",
     "build": "prisma generate && tsc",
-    "start": "prisma migrate deploy && node dist/main.js",
+    "start": "npx prisma migrate resolve --rolled-back 20260623004924_add_stock_system && prisma migrate deploy && node dist/main.js",
     "seed:categories": "ts-node src/scripts/seed-categories.ts",
     "seed:products": "ts-node src/scripts/seed-products.ts",
     "seed": "npm run seed:categories && npm run seed:products",
