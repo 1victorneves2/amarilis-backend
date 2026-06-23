@@ -342,8 +342,9 @@ async function updateOrderStatus(req: AuthRequest, res: Response): Promise<void>
         await tx.stockMovement.createMany({
           data: current.items.map((item) => ({
             productId: item.productId,
-            quantity: -item.quantity,
-            reason: 'order_confirmed',
+            type: 'OUT',
+            quantity: item.quantity,
+            reason: 'Pedido confirmado',
             orderId: id,
           })),
         });
