@@ -9,7 +9,8 @@
     "start": "prisma migrate deploy && node dist/main.js",
     "seed:categories": "ts-node src/scripts/seed-categories.ts",
     "seed:products": "ts-node src/scripts/seed-products.ts",
-    "seed": "npm run seed:categories && npm run seed:products"
+    "seed": "npm run seed:categories && npm run seed:products",
+    "fix:migration": "ts-node -e \"require('./scripts/fix-migration.ts')\""
   },
   "keywords": [],
   "author": "",
