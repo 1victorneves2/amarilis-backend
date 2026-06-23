@@ -34,4 +34,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS "StockAlert_productId_key" ON "StockAlert"("pr
 CREATE INDEX IF NOT EXISTS "Order_status_idx" ON "Order"("status");
 
 -- AddForeignKey
-ALTER TABLE "StockAlert" ADD CONSTRAINT "StockAlert_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'StockAlert_productId_fkey'
+  ) THEN
+    ALTER TABLE "StockAlert" ADD CONSTRAINT "StockAlert_productId_fkey"
+    FOREIGN KEY ("productId") REFERENCES "Product"("id")
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+END $$;
