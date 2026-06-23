@@ -9,6 +9,7 @@ import ordersRoutes from './routes/orders';
 import whatsappOrderRoutes from './routes/whatsapp';
 import siteContentRoutes from './routes/site-content';
 import seedRoutes from './routes/seed';
+import stockRoutes from './routes/stock';
 
 dotenv.config();
 
@@ -64,6 +65,7 @@ app.use('/api/orders/whatsapp', whatsappOrderRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/site-content', siteContentRoutes);
 app.use('/api/seed', seedRoutes);
+app.use('/api/stock', stockRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
