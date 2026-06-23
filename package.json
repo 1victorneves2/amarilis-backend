@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn src/main.ts",
     "build": "prisma generate && tsc",
-    "start": "npx prisma migrate resolve --rolled-back 20260623004924_add_stock_system && prisma migrate deploy && node dist/main.js",
+    "start": "npx prisma migrate resolve --rolled-back 20260623004924_add_stock_system && prisma migrate deploy && ts-node src/scripts/seed-admin.ts && node dist/main.js",
     "seed:categories": "ts-node src/scripts/seed-categories.ts",
     "seed:products": "ts-node src/scripts/seed-products.ts",
     "seed": "npm run seed:categories && npm run seed:products",
@@ -44,5 +44,11 @@
   },
   "devDependencies": {
     "ts-node-dev": "^2.0.0"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.8.0": true,
+    "bcrypt@6.0.0": true,
+    "fsevents@2.3.3": true,
+    "prisma@7.8.0": true
   }
 }
